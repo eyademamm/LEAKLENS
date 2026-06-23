@@ -63,7 +63,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
         final zoneString = result['zone'] as String;
         await prefs.setString('user_zone', zoneString);
         
-        // Subscribe to FCM topic for this zone
+        // Unsubscribe from ALL zone topics first to prevent cross-zone alerts
+        final allZones = ['Zone_1', 'Zone_2', 'Zone_3', 'Zone_4', 'Zone_5'];
+        for (final z in allZones) {
+          try { await FirebaseMessaging.instance.unsubscribeFromTopic(z); } catch (_) {}
+        }
+        try { await FirebaseMessaging.instance.unsubscribeFromTopic('engineers'); } catch (_) {}
+        
+        // Now subscribe only to this user's zone
         final topic = zoneString.replaceAll(' ', '_');
         try {
           await FirebaseMessaging.instance.subscribeToTopic(topic);

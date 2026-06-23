@@ -21,123 +21,126 @@ class RoleSelectionScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 60),
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 40),
 
-                // ── Logo ─────────────────────────────────────────────
-                FadeInDown(
-                  duration: const Duration(milliseconds: 250),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 88,
-                        height: 88,
-                        decoration: BoxDecoration(
-                          gradient: AppTheme.cyanGradient,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.cyan.withOpacity(0.35),
-                              blurRadius: 30,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
+                  // ── Logo ─────────────────────────────────────────────
+                  FadeInDown(
+                    duration: const Duration(milliseconds: 250),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 88,
+                          height: 88,
+                          decoration: BoxDecoration(
+                            gradient: AppTheme.cyanGradient,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.cyan.withOpacity(0.35),
+                                blurRadius: 30,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text('💧', style: TextStyle(fontSize: 44)),
+                          ),
                         ),
-                        child: const Center(
-                          child: Text('💧', style: TextStyle(fontSize: 44)),
+                        const SizedBox(height: 24),
+                        Text(
+                          'LeakLens',
+                          style: GoogleFonts.inter(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.textPrimary,
+                            letterSpacing: -1,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'LeakLens',
-                        style: GoogleFonts.inter(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textPrimary,
-                          letterSpacing: -1,
+                        const SizedBox(height: 8),
+                        Text(
+                          'Intelligent Water Leakage Detection',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: AppTheme.textSecondary,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Intelligent Water Leakage Detection',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: AppTheme.textSecondary,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 60),
-
-                FadeInUp(
-                  duration: const Duration(milliseconds: 250),
-                  delay: const Duration(milliseconds: 100),
-                  child: Text(
-                    'SELECT YOUR ROLE',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 2.5,
-                      color: AppTheme.textMuted,
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
 
-                // ── User Card ──────────────────────────────────────────
-                FadeInLeft(
-                  duration: const Duration(milliseconds: 250),
-                  delay: const Duration(milliseconds: 150),
-                  child: _RoleCard(
-                    emoji: '👤',
-                    title: 'User',
-                    subtitle: 'Report issues, get alerts\nand water-saving tips',
-                    gradient: AppTheme.cyanGradient,
-                    onTap: () => pushFade(context, const LoginScreen(role: 'user')),
-                  ),
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 50),
 
-                // ── Engineer Card ──────────────────────────────────────
-                FadeInRight(
-                  duration: const Duration(milliseconds: 250),
-                  delay: const Duration(milliseconds: 200),
-                  child: _RoleCard(
-                    emoji: '👷',
-                    title: 'Engineer',
-                    subtitle: 'View dashboards, analytics\nand anomaly detections',
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF4A0080), Color(0xFF9C27B0)],
-                    ),
-                    onTap: () => pushFade(context, const LoginScreen(role: 'engineer')),
-                  ),
-                ),
-
-                const Spacer(),
-
-                FadeInUp(
-                  duration: const Duration(milliseconds: 250),
-                  delay: const Duration(milliseconds: 250),
-                  child: Text(
-                    'Powered by Conv1D Autoencoder · 119 Sensors · 95th-percentile threshold',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: AppTheme.textMuted,
+                  FadeInUp(
+                    duration: const Duration(milliseconds: 250),
+                    delay: const Duration(milliseconds: 100),
+                    child: Text(
+                      'SELECT YOUR ROLE',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 2.5,
+                        color: AppTheme.textMuted,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-              ],
+                  const SizedBox(height: 20),
+
+                  // ── User Card ──────────────────────────────────────────
+                  FadeInLeft(
+                    duration: const Duration(milliseconds: 250),
+                    delay: const Duration(milliseconds: 150),
+                    child: _RoleCard(
+                      emoji: '👤',
+                      title: 'User',
+                      subtitle: 'Report issues, get alerts\nand water-saving tips',
+                      gradient: AppTheme.cyanGradient,
+                      onTap: () => pushFade(context, const LoginScreen(role: 'user')),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // ── Engineer Card ──────────────────────────────────────
+                  FadeInRight(
+                    duration: const Duration(milliseconds: 250),
+                    delay: const Duration(milliseconds: 200),
+                    child: _RoleCard(
+                      emoji: '👷',
+                      title: 'Engineer',
+                      subtitle: 'View dashboards, analytics\nand anomaly detections',
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF4A0080), Color(0xFF9C27B0)],
+                      ),
+                      onTap: () => pushFade(context, const LoginScreen(role: 'engineer')),
+                    ),
+                  ),
+
+                  const SizedBox(height: 50),
+
+                  FadeInUp(
+                    duration: const Duration(milliseconds: 250),
+                    delay: const Duration(milliseconds: 250),
+                    child: Text(
+                      'Powered by Conv1D Autoencoder · 119 Sensors · 95th-percentile threshold',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: AppTheme.textMuted,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
         ),

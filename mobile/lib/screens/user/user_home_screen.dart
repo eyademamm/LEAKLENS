@@ -804,15 +804,20 @@ class _AlertCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      isBroadcast
-                          ? 'Broadcast Alert — ${alert.zone}'
-                          : 'Leak Detected — ${alert.zone}',
-                      style: GoogleFonts.inter(
-                        color: AppTheme.textPrimary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      )),
+                    Expanded(
+                      child: Text(
+                        isBroadcast
+                            ? 'Broadcast Alert — ${alert.zone}'
+                            : 'Leak Detected — ${alert.zone}',
+                        style: GoogleFonts.inter(
+                          color: AppTheme.textPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Text(timeAgo,
                       style: GoogleFonts.inter(
                           color: AppTheme.textMuted, fontSize: 11)),

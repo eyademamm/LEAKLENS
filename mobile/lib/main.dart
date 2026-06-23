@@ -396,7 +396,18 @@ void main() async {
   final token = prefs.getString('access_token');
   final role  = prefs.getString('role');
   
-  ApiService.customBaseUrl = prefs.getString('custom_base_url');
+  // Load saved custom URL, but validate it first — wipe if malformed.
+  final savedUrl = prefs.getString('custom_base_url');
+  if (savedUrl != null) {
+    final uri = Uri.tryParse(savedUrl);
+    if (uri == null || !uri.hasAuthority || uri.port == 0) {
+      // Corrupted/invalid URL — remove it so the default kicks in.
+      await prefs.remove('custom_base_url');
+      ApiService.customBaseUrl = null;
+    } else {
+      ApiService.customBaseUrl = savedUrl;
+    }
+  }
 
   runApp(LeakLensApp(initialToken: token, initialRole: role));
 }

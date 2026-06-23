@@ -103,10 +103,10 @@ async def predict(request: PredictRequest, db: Session = Depends(get_db)):
                     "top_sensors": ",".join(result["top_sensors"]),
                 },
                 android=messaging.AndroidConfig(priority="high"),
-                topic=topic_name,
+                condition=f"'{topic_name}' in topics || 'engineers' in topics",
             )
             response = messaging.send(fcm_msg)
-            logger.info("FCM Broadcast sent to topic '%s': %s", topic_name, response)
+            logger.info("FCM Broadcast sent to condition: %s", response)
     except Exception as exc:
         logger.error("Failed to send FCM broadcast: %s", exc)
 

@@ -4,6 +4,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+import 'dart:io';
+import 'package:alarm/alarm.dart';
+import '../../main.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../models/prediction_model.dart';
@@ -30,16 +34,91 @@ class _EngineerDashboardScreenState extends State<EngineerDashboardScreen>
   bool _loadingTs = true;
   bool _loadingAlerts = true;
   bool _loadingReports = true;
+  StreamSubscription<Map<String, dynamic>>? _leakAlertSubscription;
+  StreamSubscription<AlarmSettings>? _alarmSubscription;
+  bool _isAlarmDialogShowing = false;
 
   @override
   void initState() {
     super.initState();
     _tabs = TabController(length: 5, vsync: this);
     _loadData();
+    _leakAlertSubscription = leakAlertStreamController.stream.listen(_onNewLeakAlert);
+  }
+
+  void _onNewLeakAlert(Map<String, dynamic> data) async {
+    if (!mounted) return;
+    _loadData(); // Auto-refresh the dashboard
+    
+    final zone = data['zone'] ?? 'Unknown';
+    final conf = data['confidence'] != null ? '${(double.parse(data['confidence']) * 100).round()}%' : '';
+    
+    // Trigger a loud alarm immediately for the engineer!
+    final alarmSettings = AlarmSettings(
+      id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+      dateTime: DateTime.now(),
+      assetAudioPath: 'assets/audio/alarm.mp3',
+      loopAudio: true,
+      vibrate: true,
+      volumeSettings: const VolumeSettings.fixed(volume: 1.0),
+      notificationSettings: NotificationSettings(
+        title: '🚨 CRITICAL LEAK DETECTED',
+        body: 'Anomaly detected in $zone ($conf)',
+      ),
+    );
+    
+    await Alarm.set(alarmSettings: alarmSettings);
+    _handleAlarmRing(alarmSettings);
+  }
+
+  void _handleAlarmRing(AlarmSettings alarmSettings) {
+    if (!mounted || _isAlarmDialogShowing) return;
+    _isAlarmDialogShowing = true;
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (ctx, anim1, anim2) => Scaffold(
+        backgroundColor: AppTheme.red.withOpacity(0.95),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.warning_amber_rounded, size: 120, color: Colors.white),
+              const SizedBox(height: 30),
+              Text('LEAK ALARM', style: GoogleFonts.inter(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              const SizedBox(height: 16),
+              Text(alarmSettings.notificationSettings.body ?? 'Anomaly detected.', textAlign: TextAlign.center, style: GoogleFonts.inter(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 60),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppTheme.red,
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 10,
+                ),
+                onPressed: () async {
+                  await Alarm.stop(alarmSettings.id);
+                  _isAlarmDialogShowing = false;
+                  if (mounted) Navigator.pop(ctx);
+                },
+                child: Text('ACKNOWLEDGE ALARM', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold)),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
-  void dispose() { _tabs.dispose(); super.dispose(); }
+  void dispose() { 
+    _leakAlertSubscription?.cancel();
+    _alarmSubscription?.cancel();
+    _tabs.dispose(); 
+    super.dispose(); 
+  }
 
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -66,7 +145,8 @@ class _EngineerDashboardScreenState extends State<EngineerDashboardScreen>
     try {
       final a = await ApiService().getAlerts(limit: 20);
       if (mounted) setState(() => _alerts = a);
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('Error loading alerts: $e\n$stack');
       if (mounted) setState(() => _alerts = _demoAlerts());
     } finally {
       if (mounted) setState(() => _loadingAlerts = false);
@@ -474,13 +554,17 @@ class _DetailCard extends StatelessWidget {
             children: [
               const Text('🚨', style: TextStyle(fontSize: 28)),
               const SizedBox(width: 10),
-              Text('Anomaly Detected',
-                style: GoogleFonts.inter(
-                  color: AppTheme.red,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                )),
-              const Spacer(),
+              Expanded(
+                child: Text('Anomaly Detected',
+                  style: GoogleFonts.inter(
+                    color: AppTheme.red,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
               Text('${(alert.confidence * 100).round()}% confidence',
                 style: GoogleFonts.inter(
                     color: AppTheme.textMuted, fontSize: 12)),
@@ -982,9 +1066,12 @@ class _ReportsTabState extends State<_ReportsTab> {
       children: [
         // ── Filter chips ─────────────────────────────────────────
         Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: Row(
-            children: [
+          padding: const EdgeInsets.fromLTRB(0, 12, 0, 8),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
               _FilterChip(label: 'All', active: _filter == 'All',
                   color: AppTheme.cyan,
                   onTap: () => setState(() => _filter = 'All')),
@@ -1007,7 +1094,8 @@ class _ReportsTabState extends State<_ReportsTab> {
             ],
           ),
         ),
-        const Divider(height: 1, color: AppTheme.border),
+      ),
+      const Divider(height: 1, color: AppTheme.border),
 
         // ── List ──────────────────────────────────────────────
         if (displayed.isEmpty)

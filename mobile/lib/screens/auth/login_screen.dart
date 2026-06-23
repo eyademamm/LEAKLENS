@@ -69,12 +69,32 @@ class _LoginScreenState extends State<LoginScreen> {
         final zoneString = result['zone'] as String;
         await prefs.setString('user_zone', zoneString);
         
-        // Subscribe to FCM topic for this zone
+        // Unsubscribe from ALL zone topics first to prevent cross-zone alerts
+        // (e.g. if a Zone 4 user previously logged in as Zone 2 on this device)
+        final allZones = ['Zone_1', 'Zone_2', 'Zone_3', 'Zone_4', 'Zone_5'];
+        for (final z in allZones) {
+          try { await FirebaseMessaging.instance.unsubscribeFromTopic(z); } catch (_) {}
+        }
+        // Also unsubscribe from engineers topic in case they previously logged in as engineer
+        try { await FirebaseMessaging.instance.unsubscribeFromTopic('engineers'); } catch (_) {}
+        
+        // Now subscribe only to this user's zone
         final topic = zoneString.replaceAll(' ', '_');
         try {
           await FirebaseMessaging.instance.subscribeToTopic(topic);
         } catch (e) {
           debugPrint('Failed to subscribe to topic $topic: $e');
+        }
+      } else if (!_isUser) {
+        // Engineers: unsubscribe from all zone topics, subscribe to engineers only
+        final allZones = ['Zone_1', 'Zone_2', 'Zone_3', 'Zone_4', 'Zone_5'];
+        for (final z in allZones) {
+          try { await FirebaseMessaging.instance.unsubscribeFromTopic(z); } catch (_) {}
+        }
+        try {
+          await FirebaseMessaging.instance.subscribeToTopic('engineers');
+        } catch (e) {
+          debugPrint('Failed to subscribe engineer to global topic: $e');
         }
       }
 
