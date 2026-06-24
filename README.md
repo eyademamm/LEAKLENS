@@ -65,6 +65,11 @@ run_system.bat
 ```
 
 ```bash
+# Docker (Recommended)
+docker-compose up --build
+```
+
+```bash
 # Manual
 cd backend
 python -m venv venv
